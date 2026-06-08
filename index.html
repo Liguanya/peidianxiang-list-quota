@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>配电箱（柜）清单定额自动编制系统</title>
+    <script src="xlsx.full.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(135deg, #1a5e63 0%, #0d3d44 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #1a5e63 0%, #0d3d44 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        .header p {
+            opacity: 0.85;
+            font-size: 14px;
+        }
+        .content {
+            padding: 30px;
+        }
+        .instructions {
+            background: #f0f7f8;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 25px;
+            border-left: 4px solid #1a5e63;
+        }
+        .instructions h3 {
+            color: #0d3d44;
+            margin-bottom: 12px;
+            font-size: 16px;
+        }
+        .instructions ul {
+            color: #555;
+            font-size: 13px;
+            padding-left: 20px;
+            line-height: 2;
+        }
+        .instructions li {
+            margin-bottom: 4px;
+        }
+        .instructions strong {
+            color: #c0392b;
+        }
+        .upload-area {
+            border: 3px dashed #1a5e63;
+            border-radius: 12px;
+            padding: 50px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 25px;
+            background: #fafcfb;
+        }
+        .upload-area:hover {
+            border-color: #0d3d44;
+            background: #f0f7f8;
+        }
+        .upload-area.dragover {
+            background: #e0f0f2;
+            border-color: #0d3d44;
+        }
+        .upload-icon {
+            font-size: 50px;
+            margin-bottom: 15px;
+        }
+        .upload-text {
+            color: #555;
+            font-size: 16px;
+        }
+        .upload-hint {
+            color: #999;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+        .file-input {
+            display: none;
+        }
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #1a5e63 0%, #0d3d44 100%);
+            color: white;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(26,94,99,0.4);
+        }
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        .btn-download {
+            background: linear-gradient(135deg, #27ae60 0%, #1e8449 100%);
+            color: white;
+        }
+        .btn-download:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(39,174,96,0.4);
+        }
+        .table-container {
+            overflow-x: auto;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+        th {
+            background: linear-gradient(135deg, #1a5e63 0%, #0d3d44 100%);
+            color: white;
+            padding: 12px 6px;
+            text-align: center;
+            font-weight: 500;
+            white-space: nowrap;
+            min-width: 60px;
+        }
+        th.col-seq { min-width: 40px; }
+        th.col-code { min-width: 100px; }
+        th.col-name { min-width: 160px; }
+        th.col-dim { min-width: 140px; }
+        th.col-peri { min-width: 80px; }
+        th.col-quota { min-width: 80px; }
+        th.col-quota-name { min-width: 220px; }
+        th.col-qty { min-width: 50px; }
+        th.col-feature { min-width: 350px; }
+
+        td {
+            padding: 10px 6px;
+            text-align: center;
+            border-bottom: 1px solid #eee;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        td.left-align {
+            text-align: left;
+        }
+        tr:hover {
+            background: #f8fffe;
+        }
+        .status {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        .status-info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .summary-card {
+            background: linear-gradient(135deg, #1a5e63 0%, #0d3d44 100%);
+            color: white;
+            padding: 18px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .summary-card.green {
+            background: linear-gradient(135deg, #27ae60 0%, #1e8449 100%);
+        }
+        .summary-card .number {
+            font-size: 26px;
+            font-weight: bold;
+        }
+        .summary-card .label {
+            font-size: 12px;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+        .hidden {
+            display: none;
+        }
+        .input-format-hint {
+            background: #fff8e1;
+            border: 1px solid #ffe082;
+            border-radius: 8px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            color: #555;
+        }
+        .input-format-hint b {
+            color: #c0392b;
+        }
+        .input-format-hint table {
+            margin-top: 10px;
+            font-size: 12px;
+        }
+        .input-format-hint th {
+            background: #ffe082;
+            color: #333;
+            padding: 6px 10px;
+        }
+        .input-format-hint td {
+            padding: 6px 10px;
+            border-bottom: 1px solid #ffe082;
+            text-align: center;
+        }
+        @media (max-width: 768px) {
+            .header h1 { font-size: 22px; }
+            .upload-area { padding: 30px; }
+            table { font-size: 11px; }
+            th, td { padding: 8px 3px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚡ 配电箱（柜）清单定额自动编制系统</h1>
+            <p>天津地区2025清单计价规范 · 上传Excel自动生成清单定额表</p>
+        </div>
+        <div class="content">
+            <div class="instructions">
+                <h3>📋 使用说明</h3>
+                <ul>
+                    <li>上传包含配电箱/柜工程量清单的 Excel 文件（支持 .xlsx、.xls 格式）</li>
+                    <li>表格中需包含 <strong>A列=产品名称</strong>、<strong>B列=尺寸</strong>（宽×高×厚，单位mm）、<strong>C列=数量</strong></li>
+                    <li>系统自动套用天津2025清单编码、定额编码，生成完整项目特征</li>
+                    <li>点击「导出Excel」下载处理后的清单定额报价表</li>
+                    <li>所有数据处理在本地完成，不会上传到任何服务器</li>
+                </ul>
+            </div>
+
+            <div class="input-format-hint">
+                <b>📌 Excel输入格式示例：</b>
+                <table>
+                    <tr><th>A列-产品名称</th><th>B列-尺寸</th><th>C列-数量</th></tr>
+                    <tr><td>配电箱AL1</td><td>800*1500*300</td><td>2</td></tr>
+                    <tr><td>配电箱AP1</td><td>600*800*200</td><td>3</td></tr>
+                    <tr><td>低压配电柜AN1</td><td>1000*2000*600</td><td>1</td></tr>
+                </table>
+                <div style="margin-top:8px;font-size:12px;color:#888;">
+                    💡 尺寸格式说明：宽×高×厚，单位mm，×可用英文字母X替代，如 <b>800X1500X300</b>
+                </div>
+            </div>
+
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-icon">📁</div>
+                <div class="upload-text">点击上传或拖拽文件到此处</div>
+                <div class="upload-hint">支持 .xlsx、.xls 格式</div>
+                <input type="file" class="file-input" id="fileInput" accept=".xlsx,.xls">
+            </div>
+
+            <div id="statusArea" class="hidden"></div>
+
+            <div class="summary hidden" id="summaryArea">
+                <div class="summary-card">
+                    <div class="number" id="totalCount">0</div>
+                    <div class="label">总数量（条）</div>
+                </div>
+                <div class="summary-card">
+                    <div class="number" id="peidianxiangCount">0</div>
+                    <div class="label">配电箱类</div>
+                </div>
+                <div class="summary-card">
+                    <div class="number" id="peidianguiCount">0</div>
+                    <div class="label">配电柜类</div>
+                </div>
+            </div>
+
+            <div class="btn-group hidden" id="btnGroup">
+                <button class="btn btn-download" id="exportBtn">📥 导出Excel</button>
+                <button class="btn btn-secondary" id="resetBtn">🔄 重新上传</button>
+            </div>
+
+            <div class="table-container hidden" id="tableContainer">
+                <table id="resultTable">
+                    <thead>
+                        <tr>
+                            <th class="col-seq">序号</th>
+                            <th class="col-code">清单编码</th>
+                            <th class="col-name">项目名称</th>
+                            <th class="col-dim">尺寸（宽×高×厚）</th>
+                            <th class="col-peri">半周长(mm)</th>
+                            <th class="col-quota">定额编码</th>
+                            <th class="col-quota-name">定额名称</th>
+                            <th class="col-qty">数量</th>
+                            <th class="col-feature">项目特征</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量
+        let processedData = [];
+
+        // DOM元素
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const statusArea = document.getElementById('statusArea');
+        const summaryArea = document.getElementById('summaryArea');
+        const btnGroup = document.getElementById('btnGroup');
+        const tableContainer = document.getElementById('tableContainer');
+        const tableBody = document.getElementById('tableBody');
+        const exportBtn = document.getElementById('exportBtn');
+        const resetBtn = document.getElementById('resetBtn');
+
+        // 拖拽上传
+        uploadArea.addEventListener('click', () => fileInput.click());
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            if (file) handleFile(file);
+        });
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) handleFile(file);
+        });
+
+        resetBtn.addEventListener('click', resetPage);
+        exportBtn.addEventListener('click', exportExcel);
+
+        // 处理上传文件
+        function handleFile(file) {
+            const validTypes = [
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'application/vnd.ms-excel'
+            ];
+            if (!validTypes.includes(file.type) && !file.name.match(/\.(xlsx|xls)$/i)) {
+                showStatus('请上传 Excel 文件！', 'error');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array', cellDates: true });
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const jsonData = XLSX.utils.sheet_to_json(firstSheet, { defval: '' });
+
+                    if (jsonData.length === 0) {
+                        showStatus('Excel 文件中没有数据！', 'error');
+                        return;
+                    }
+
+                    processedData = processData(jsonData);
+                    if (processedData.length === 0) {
+                        showStatus('未识别到有效的配电箱/柜数据，请检查A列产品名称！', 'error');
+                        return;
+                    }
+                    displayResults(processedData);
+                    showStatus('成功处理 ' + processedData.length + ' 条数据', 'success');
+                } catch (error) {
+                    showStatus('文件解析失败：' + error.message, 'error');
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        // ==================== 核心数据处理 ====================
+
+        // 识别配电箱类型
+        function identifyType(name) {
+            if (!name || typeof name !== 'string') return null;
+            const n = name.trim();
+
+            // 配电柜类关键词
+            const guiKeywords = ['配电柜', '高压配电柜', '低压配电柜', '受电柜', '进线柜', '出线柜',
+                '母联柜', '电容柜', '补偿柜', '联络柜', '切换柜', '总柜', '主柜', '馈线柜',
+                '功率补偿柜', '无功补偿柜', '电容补偿柜'];
+
+            // 先检查是否包含配电柜关键词
+            for (const kw of guiKeywords) {
+                if (n.includes(kw)) {
+                    return { category: '配电柜', listCode: '030402010' };
+                }
+            }
+
+            // 配电箱类（配电箱、照明箱、动力箱、控制箱等）
+            const xiangKeywords = ['配电箱', '照明箱', '动力箱', '控制箱', '双电源箱', '切换箱',
+                '计量箱', '插座箱', '建筑小品配电箱', '热水器配电箱', '太阳能配电箱',
+                '空调配电箱', '风机配电箱', '水泵配电箱', '电梯配电箱', '消防配电箱',
+                '应急配电箱', 'UPS配电箱', '通信配电箱', '信号箱', '按钮箱', '电源箱',
+                '检修箱', '分电箱', '总箱', '分配箱'];
+
+            for (const kw of xiangKeywords) {
+                if (n.includes(kw)) {
+                    return { category: '配电箱', listCode: '030402011' };
+                }
+            }
+
+            return null; // 无法识别
+        }
+
+        // 提取尺寸：支持 800*1500*300 或 800X1500X300
+        function extractDimensions(dimStr) {
+            if (!dimStr || typeof dimStr !== 'string') {
+                return { width: 0, height: 0, thickness: 0 };
+            }
+            const s = dimStr.trim().replace(/\s/g, '');
+
+            // 匹配 宽*高*厚 或 宽X高X厚
+            // 格式：数字*数字*数字 或 数字X数字X数字
+            // 支持括号内加法如 800X(1000+800)X300
+            const match3d = s.match(/(\d+)(?:[Xx\*×]|X\()(\d+)(?:[Xx\*×])(\d+)/);
+            if (match3d) {
+                let w = parseFloat(match3d[1]);
+                let h = parseFloat(match3d[2]);
+                let t = parseFloat(match3d[3]);
+                // 处理括号加法
+                const parenMatch = dimStr.match(/\((\d+)\+(\d+)\)/g);
+                if (parenMatch) {
+                    parenMatch.forEach(m => {
+                        const nums = m.match(/\d+/g);
+                        if (nums && nums.length === 2) {
+                            h = parseFloat(nums[0]) + parseFloat(nums[1]);
+                        }
+                    });
+                }
+                return { width: w, height: h, thickness: t };
+            }
+
+            // 匹配 宽*高（两段）
+            const match2d = s.match(/(\d+)(?:[Xx\*×])(\d+)/);
+            if (match2d) {
+                return {
+                    width: parseFloat(match2d[1]),
+                    height: parseFloat(match2d[2]),
+                    thickness: 0
+                };
+            }
+
+            return { width: 0, height: 0, thickness: 0 };
+        }
+
+        // 套用定额
+        function applyQuota(width, height, thickness, category) {
+            if (category === '配电柜') {
+                // 高压配电柜：2-85
+                return {
+                    code: '2-85',
+                    name: '高压成套配电柜安装 单母线柜 电容器柜、其他柜'
+                };
+            }
+
+            // 配电箱：判断安装方式
+            if (width <= 800 && height <= 1200 && thickness <= 300) {
+                // 悬挂嵌入式：根据半周长套用
+                const perimeterM = (width + height) / 1000; // 转换为米
+                if (perimeterM <= 0.5) {
+                    return { code: '2-305', name: '成套配电箱安装 悬挂嵌入式 半周长0.5m以内' };
+                } else if (perimeterM <= 1.0) {
+                    return { code: '2-306', name: '成套配电箱安装 悬挂嵌入式 半周长1.0m以内' };
+                } else if (perimeterM <= 1.5) {
+                    return { code: '2-307', name: '成套配电箱安装 悬挂嵌入式 半周长1.5m以内' };
+                } else if (perimeterM <= 2.0) {
+                    return { code: '2-308', name: '成套配电箱安装 悬挂嵌入式 半周长2.0m以内' };
+                } else if (perimeterM <= 2.5) {
+                    return { code: '2-308', name: '成套配电箱安装 悬挂嵌入式 半周长2.5m以内' };
+                } else if (perimeterM <= 3.0) {
+                    return { code: '2-309', name: '成套配电箱安装 悬挂嵌入式 半周长3.0m以内' };
+                } else {
+                    return { code: '2-309', name: '成套配电箱安装 悬挂嵌入式 半周长3.0m以内' };
+                }
+            } else {
+                // 落地式
+                return {
+                    code: '2-304',
+                    name: '成套配电箱安装 落地式'
+                };
+            }
+        }
+
+        // 生成项目特征
+        function generateFeatures(name, dimStr, installMethod) {
+            return '1.名称:' + name + '\n2.规格:' + dimStr + '\n3.安装方式:' + installMethod + '\n4.含接线箱或木套箱、含槽钢、含端子接线\n5.其他:满足招标图纸、招标文件、技术标准及相关图集规范要求';
+        }
+
+        // 数据处理函数
+        function processData(data) {
+            const results = [];
+            let index = 1;
+
+            for (const row of data) {
+                // 获取A列（产品名称）
+                const name = row['A'] || row['a'] || row['产品名称'] || row['名称'] ||
+                    Object.values(row)[0];
+
+                if (!name || typeof name !== 'string') continue;
+
+                // 识别类型
+                const typeInfo = identifyType(name);
+                if (!typeInfo) continue;
+
+                // 获取B列（尺寸）
+                const dimRaw = row['B'] || row['b'] || row['尺寸'] ||
+                    (Object.values(row).length > 1 ? Object.values(row)[1] : '');
+                const dims = extractDimensions(String(dimRaw));
+
+                // 获取C列（数量）
+                const qtyRaw = row['C'] || row['c'] || row['数量'] ||
+                    (Object.values(row).length > 2 ? Object.values(row)[2] : 1);
+                const quantity = parseFloat(qtyRaw) || 1;
+
+                // 构建尺寸字符串
+                const dimStr = dims.thickness > 0
+                    ? dims.width + '×' + dims.height + '×' + dims.thickness
+                    : dims.width + '×' + dims.height;
+
+                // 半周长 = 宽 + 高（mm）
+                const perimeter = dims.width + dims.height;
+
+                // 套用定额
+                const quota = applyQuota(dims.width, dims.height, dims.thickness, typeInfo.category);
+
+                // 安装方式
+                const installMethod = quota.code === '2-304' ? '落地安装' : '壁挂安装';
+
+                // 项目特征
+                const features = generateFeatures(name, dimStr, installMethod);
+
+                results.push({
+                    index: index++,
+                    listCode: typeInfo.listCode,
+                    name: name,
+                    dimStr: dimStr,
+                    width: dims.width,
+                    height: dims.height,
+                    thickness: dims.thickness,
+                    perimeter: perimeter,
+                    quotaCode: quota.code,
+                    quotaName: quota.name,
+                    installMethod: installMethod,
+                    quantity: quantity,
+                    features: features
+                });
+            }
+
+            return results;
+        }
+
+        // 显示状态
+        function showStatus(message, type) {
+            statusArea.className = 'status status-' + type;
+            statusArea.textContent = message;
+            statusArea.classList.remove('hidden');
+        }
+
+        // 显示结果
+        function displayResults(data) {
+            tableBody.innerHTML = '';
+            data.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.innerHTML =
+                    '<td>' + item.index + '</td>' +
+                    '<td>' + item.listCode + '</td>' +
+                    '<td class="left-align" style="max-width:160px;overflow:hidden;text-overflow:ellipsis;">' + item.name + '</td>' +
+                    '<td>' + item.dimStr + '</td>' +
+                    '<td>' + item.perimeter + '</td>' +
+                    '<td>' + item.quotaCode + '</td>' +
+                    '<td class="left-align" style="max-width:220px;overflow:hidden;text-overflow:ellipsis;">' + item.quotaName + '</td>' +
+                    '<td>' + item.quantity + '</td>' +
+                    '<td class="left-align" style="text-align:left;white-space:pre-line;max-width:350px;font-size:11px;">' + item.features.replace(/\n/g, '<br>') + '</td>';
+                tableBody.appendChild(tr);
+            });
+
+            // 统计
+            const peidianxiangCount = data.filter(d => d.listCode === '030402011').length;
+            const peidianguiCount = data.filter(d => d.listCode === '030402010').length;
+
+            document.getElementById('totalCount').textContent = data.length;
+            document.getElementById('peidianxiangCount').textContent = peidianxiangCount;
+            document.getElementById('peidianguiCount').textContent = peidianguiCount;
+
+            summaryArea.classList.remove('hidden');
+            btnGroup.classList.remove('hidden');
+            tableContainer.classList.remove('hidden');
+        }
+
+        // 导出Excel
+        function exportExcel() {
+            if (processedData.length === 0) {
+                showStatus('没有数据可导出！', 'error');
+                return;
+            }
+
+            // 广联达15列三行结构
+            // 表头行
+            const wsData = [
+                ['序号', '清单编码', '项目名称', '尺寸', '半周长(mm)', '定额编码',
+                 '定额名称', '数量', '项目特征']
+            ];
+
+            processedData.forEach(item => {
+                wsData.push([
+                    item.index,              // A: 序号
+                    item.listCode,           // B: 清单编码
+                    item.name,               // C: 项目名称
+                    item.dimStr,             // D: 尺寸
+                    item.perimeter,          // E: 半周长
+                    item.quotaCode,          // F: 定额编码
+                    item.quotaName,          // G: 定额名称
+                    item.quantity,           // H: 数量
+                    item.features            // I: 项目特征
+                ]);
+            });
+
+            const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+            // 设置列宽
+            ws['!cols'] = [
+                { wch: 6 },    // A: 序号
+                { wch: 14 },   // B: 清单编码
+                { wch: 30 },   // C: 项目名称
+                { wch: 20 },   // D: 尺寸
+                { wch: 14 },   // E: 半周长
+                { wch: 12 },   // F: 定额编码
+                { wch: 35 },   // G: 定额名称
+                { wch: 8 },    // H: 数量
+                { wch: 70 }    // I: 项目特征
+            ];
+
+            // 设置行高
+            const rowHeight = [{ hpt: 30 }]; // 表头行高
+            processedData.forEach(item => {
+                const lines = (item.features.match(/\n/g) || []).length + 1;
+                rowHeight.push({ hpt: Math.max(lines * 15, 30) });
+            });
+            ws['!rows'] = rowHeight;
+
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, '配电箱清单定额表');
+
+            const fileName = '配电箱清单定额表_' + new Date().toISOString().slice(0, 10) + '.xlsx';
+            XLSX.writeFile(wb, fileName);
+            showStatus('Excel 文件已导出！', 'success');
+        }
+
+        // 重置页面
+        function resetPage() {
+            processedData = [];
+            fileInput.value = '';
+            statusArea.classList.add('hidden');
+            summaryArea.classList.add('hidden');
+            btnGroup.classList.add('hidden');
+            tableContainer.classList.add('hidden');
+            tableBody.innerHTML = '';
+        }
+    </script>
+</body>
+</html>
