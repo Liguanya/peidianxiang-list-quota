@@ -284,13 +284,16 @@
             <div class="input-format-hint">
                 <b>📌 Excel输入格式示例：</b>
                 <table>
-                    <tr><th>A列-产品名称</th><th>B列-尺寸</th><th>C列-数量</th></tr>
-                    <tr><td>配电箱AL1</td><td>800*1500*300</td><td>2</td></tr>
-                    <tr><td>配电箱AP1</td><td>600*800*200</td><td>3</td></tr>
-                    <tr><td>低压配电柜AN1</td><td>1000*2000*600</td><td>1</td></tr>
+                    <tr><th>A列-产品名称</th><th>B列-尺寸（宽×高×厚）</th><th>C列-数量</th></tr>
+                    <tr><td>配电箱AL1</td><td>600×800×200</td><td>2</td></tr>
+                    <tr><td>配电箱AP1</td><td>800×1200×300</td><td>3</td></tr>
+                    <tr><td>低压配电柜AN1</td><td>1000×2000×600</td><td>1</td></tr>
                 </table>
-                <div style="margin-top:8px;font-size:12px;color:#888;">
-                    💡 尺寸格式说明：宽×高×厚，单位mm，×可用英文字母X替代，如 <b>800X1500X300</b>
+                <div style="margin-top:10px;font-size:12px;color:#555;">
+                    <b>⚠️ 定额套用判断规则：</b><br>
+                    &nbsp;&nbsp;• <b>落地式（2-304）</b>：宽&gt;800 <b>或</b> 高&gt;1200 <b>或</b> 厚&gt;300 → 三者满足其一即套用<br>
+                    &nbsp;&nbsp;• <b>悬挂嵌入式（2-305~2-309）</b>：宽≤800 <b>且</b> 高≤1200 <b>且</b> 厚≤300 → 三个条件必须全部满足<br>
+                    &nbsp;&nbsp;• <b>半周长</b> = 宽 + 高（单位mm），换算为米后对应定额分档
                 </div>
             </div>
 
@@ -455,7 +458,7 @@
             return null; // 无法识别
         }
 
-        // 提取尺寸：支持 800*1500*300 或 800X1500X300
+        // 提取尺寸：支持 600*800*200 或 600X800X200
         function extractDimensions(dimStr) {
             if (!dimStr || typeof dimStr !== 'string') {
                 return { width: 0, height: 0, thickness: 0 };
