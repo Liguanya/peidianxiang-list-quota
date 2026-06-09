@@ -871,7 +871,7 @@
                     '<td>0</td>';
                 guangluTableBody.appendChild(tr1);
 
-                // 定额行 - G列输出"子目下设备"，H列输出定额名称
+                // 定额行
                 const tr2 = document.createElement('tr');
                 tr2.innerHTML =
                     '<td>' + item.index + '.1</td>' +
@@ -880,7 +880,7 @@
                     '<td></td>' +
                     '<td></td>' +
                     '<td>' + item.quotaCode + '</td>' +
-                    '<td>子目下设备</td>' +
+                    '<td>定额行</td>' +
                     '<td>' + item.quotaName + '</td>' +
                     '<td></td>' +
                     '<td>台</td>' +
@@ -888,7 +888,7 @@
                     '<td></td>';
                 guangluTableBody.appendChild(tr2);
 
-                // 未计价材行
+                // 未计价材行 - G列输出"子目下设备"
                 const tr3 = document.createElement('tr');
                 tr3.innerHTML =
                     '<td>' + item.index + '.2</td>' +
@@ -897,7 +897,7 @@
                     '<td></td>' +
                     '<td></td>' +
                     '<td>' + item.materialCode + '</td>' +
-                    '<td>未计价材行</td>' +
+                    '<td>子目下设备</td>' +
                     '<td>' + item.name + '</td>' +
                     '<td></td>' +
                     '<td>台</td>' +
@@ -998,7 +998,7 @@
                     0                         // L: 主材单价
                 ]);
 
-                // 定额行 - G列输出"子目下设备"，H列输出定额名称
+                // 定额行 - G列输出"定额行"，H列输出定额名称
                 wsData.push([
                     item.index + '.1',       // A: 序号
                     '',                       // B: 项目名称
@@ -1006,7 +1006,7 @@
                     '',                       // D: 半周长
                     '',                       // E: 工程量
                     item.quotaCode,           // F: 项目编码（定额编码）
-                    '子目下设备',            // G: 行类型
+                    '定额行',                // G: 行类型
                     item.quotaName,           // H: 名称（输出定额名称）
                     '',                       // I: 项目特征
                     '台',                    // J: 单位
@@ -1014,7 +1014,7 @@
                     ''                        // L: 主材单价（留空）
                 ]);
 
-                // 未计价材行
+                // 未计价材行 - G列输出"子目下设备"
                 wsData.push([
                     item.index + '.2',       // A: 序号
                     '',                       // B: 项目名称
@@ -1022,7 +1022,7 @@
                     '',                       // D: 半周长
                     '',                       // E: 工程量
                     item.materialCode,       // F: 项目编码（未计价材编码）
-                    '未计价材行',            // G: 行类型
+                    '子目下设备',            // G: 行类型
                     item.name,               // H: 名称
                     '',                       // I: 项目特征
                     '台',                    // J: 单位
