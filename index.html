@@ -66,6 +66,42 @@
         .instructions strong {
             color: #c0392b;
         }
+        /* 软件切换按钮 */
+        .software-toggle {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .software-toggle .toggle-label {
+            font-size: 14px;
+            color: #333;
+            font-weight: 500;
+        }
+        .software-toggle .toggle-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        .software-toggle .toggle-btn {
+            padding: 10px 24px;
+            border: 2px solid #1a5e63;
+            background: white;
+            color: #1a5e63;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+        .software-toggle .toggle-btn:hover {
+            background: #e8f4f5;
+        }
+        .software-toggle .toggle-btn.active {
+            background: linear-gradient(135deg, #1a5e63 0%, #0d3d44 100%);
+            color: white;
+            border-color: #1a5e63;
+        }
         .upload-area {
             border: 3px dashed #1a5e63;
             border-radius: 12px;
@@ -169,6 +205,25 @@
         th.col-quota-name { min-width: 220px; }
         th.col-qty { min-width: 50px; }
         th.col-feature { min-width: 350px; }
+        /* 广联达格式表格样式 */
+        th.col-gl {
+            min-width: 80px;
+        }
+        th.col-material {
+            min-width: 120px;
+        }
+        th.col-material-code {
+            min-width: 120px;
+        }
+        th.col-material-name {
+            min-width: 160px;
+        }
+        th.col-feature-gl {
+            min-width: 200px;
+        }
+        th.col-unit { min-width: 50px; }
+        th.col-qty-gl { min-width: 60px; }
+        th.col-price { min-width: 80px; }
 
         td {
             padding: 10px 6px;
@@ -255,11 +310,44 @@
             border-bottom: 1px solid #ffe082;
             text-align: center;
         }
+        /* 广联达格式说明 */
+        .guanglu-format-hint {
+            background: #e3f2fd;
+            border: 1px solid #90caf9;
+            border-radius: 8px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            color: #1565c0;
+        }
+        .guanglu-format-hint b {
+            color: #0d47a1;
+        }
+        .guanglu-format-hint .format-example {
+            margin-top: 10px;
+            font-size: 11px;
+            color: #555;
+        }
+        .guanglu-format-hint .format-example table {
+            margin-top: 8px;
+            font-size: 11px;
+        }
+        .guanglu-format-hint .format-example th {
+            background: #90caf9;
+            color: #333;
+            padding: 4px 6px;
+        }
+        .guanglu-format-hint .format-example td {
+            padding: 4px 6px;
+            border-bottom: 1px solid #90caf9;
+            text-align: center;
+        }
         @media (max-width: 768px) {
             .header h1 { font-size: 22px; }
             .upload-area { padding: 30px; }
             table { font-size: 11px; }
             th, td { padding: 8px 3px; }
+            .software-toggle { flex-direction: column; align-items: flex-start; }
         }
     </style>
 </head>
@@ -281,8 +369,18 @@
                 </ul>
             </div>
 
-            <div class="input-format-hint">
-                <b>📌 Excel输入格式示例：</b>
+            <!-- 软件切换选项 -->
+            <div class="software-toggle">
+                <span class="toggle-label">📂 导出格式：</span>
+                <div class="toggle-buttons">
+                    <button class="toggle-btn active" id="btn-jianjing" onclick="setSoftware('jianjing')">建经科技</button>
+                    <button class="toggle-btn" id="btn-guanglu" onclick="setSoftware('guanglu')">广联达</button>
+                </div>
+            </div>
+
+            <!-- 建经科技格式说明（默认显示） -->
+            <div id="jianjingHint" class="input-format-hint">
+                <b>📌 建经科技 Excel输入格式示例：</b>
                 <table>
                     <tr><th>A列-产品名称</th><th>B列-尺寸（宽×高×厚）</th><th>C列-数量</th></tr>
                     <tr><td>配电箱AL1</td><td>600×800×200</td><td>2</td></tr>
@@ -294,6 +392,25 @@
                     &nbsp;&nbsp;• <b>落地式（2-304）</b>：宽&gt;800 <b>或</b> 高&gt;1200 <b>或</b> 厚&gt;300 → 三者满足其一即套用<br>
                     &nbsp;&nbsp;• <b>悬挂嵌入式（2-305~2-309）</b>：宽≤800 <b>且</b> 高≤1200 <b>且</b> 厚≤300 → 三个条件必须全部满足<br>
                     &nbsp;&nbsp;• <b>半周长</b> = 宽 + 高（单位mm），换算为米后对应定额分档
+                </div>
+            </div>
+
+            <!-- 广联达格式说明（默认隐藏） -->
+            <div id="guangluHint" class="guanglu-format-hint hidden">
+                <b>📌 广联达 Excel输出格式说明：</b>
+                <p style="margin-top:8px;">每个清单项按<span style="color:#c0392b;font-weight:bold;">三行</span>输出，包含清单行、定额行、未计价材行</p>
+                <div class="format-example">
+                    <b>示例结构：</b>
+                    <table>
+                        <tr>
+                            <th>A序号</th><th>B项目名称</th><th>C尺寸</th><th>D半周长</th><th>E工程量</th>
+                            <th>F项目编码</th><th>G行类型</th><th>H名称</th><th>I项目特征</th>
+                            <th>J单位</th><th>K工程量</th><th>L主材单价</th>
+                        </tr>
+                        <tr><td>1</td><td>配电箱AL1</td><td>800*1500*300</td><td>2300mm</td><td>1</td><td>030402010</td><td>清单行</td><td>配电箱AL1</td><td>项目特征...</td><td>台</td><td>1</td><td>0</td></tr>
+                        <tr><td>1.1</td><td></td><td></td><td></td><td></td><td>2-304</td><td>定额行</td><td>配电箱AL1</td><td></td><td>台</td><td>1</td><td></td></tr>
+                        <tr><td>1.2</td><td></td><td></td><td></td><td></td><td>Z00741-001</td><td>未计价材行</td><td>配电箱AL1</td><td></td><td>台</td><td>1</td><td>0</td></tr>
+                    </table>
                 </div>
             </div>
 
@@ -326,8 +443,9 @@
                 <button class="btn btn-secondary" id="resetBtn">🔄 重新上传</button>
             </div>
 
-            <div class="table-container hidden" id="tableContainer">
-                <table id="resultTable">
+            <!-- 建经科技表格视图（默认显示） -->
+            <div class="table-container hidden" id="jianjingTableContainer">
+                <table id="jianjingTable">
                     <thead>
                         <tr>
                             <th class="col-seq">序号</th>
@@ -341,7 +459,30 @@
                             <th class="col-feature">项目特征</th>
                         </tr>
                     </thead>
-                    <tbody id="tableBody"></tbody>
+                    <tbody id="jianjingTableBody"></tbody>
+                </table>
+            </div>
+
+            <!-- 广联达表格视图（默认隐藏） -->
+            <div class="table-container hidden" id="guangluTableContainer">
+                <table id="guangluTable">
+                    <thead>
+                        <tr>
+                            <th class="col-gl">序号</th>
+                            <th class="col-material">项目名称</th>
+                            <th class="col-gl">尺寸</th>
+                            <th class="col-gl">半周长</th>
+                            <th class="col-gl">工程量</th>
+                            <th class="col-material-code">项目编码</th>
+                            <th class="col-gl">行类型</th>
+                            <th class="col-material-name">名称</th>
+                            <th class="col-feature-gl">项目特征</th>
+                            <th class="col-unit">单位</th>
+                            <th class="col-qty-gl">工程量</th>
+                            <th class="col-price">主材单价</th>
+                        </tr>
+                    </thead>
+                    <tbody id="guangluTableBody"></tbody>
                 </table>
             </div>
         </div>
@@ -350,6 +491,7 @@
     <script>
         // 全局变量
         let processedData = [];
+        let currentSoftware = 'jianjing'; // 默认建经科技格式
 
         // DOM元素
         const uploadArea = document.getElementById('uploadArea');
@@ -357,10 +499,46 @@
         const statusArea = document.getElementById('statusArea');
         const summaryArea = document.getElementById('summaryArea');
         const btnGroup = document.getElementById('btnGroup');
-        const tableContainer = document.getElementById('tableContainer');
-        const tableBody = document.getElementById('tableBody');
+        const jianjingTableContainer = document.getElementById('jianjingTableContainer');
+        const guangluTableContainer = document.getElementById('guangluTableContainer');
+        const jianjingTableBody = document.getElementById('jianjingTableBody');
+        const guangluTableBody = document.getElementById('guangluTableBody');
         const exportBtn = document.getElementById('exportBtn');
         const resetBtn = document.getElementById('resetBtn');
+        const jianjingHint = document.getElementById('jianjingHint');
+        const guangluHint = document.getElementById('guangluHint');
+
+        // 软件切换函数
+        function setSoftware(software) {
+            currentSoftware = software;
+            
+            // 更新按钮状态
+            document.getElementById('btn-jianjing').classList.remove('active');
+            document.getElementById('btn-guanglu').classList.remove('active');
+            document.getElementById('btn-' + software).classList.add('active');
+            
+            // 更新格式说明
+            if (software === 'jianjing') {
+                jianjingHint.classList.remove('hidden');
+                guangluHint.classList.add('hidden');
+                jianjingTableContainer.classList.remove('hidden');
+                guangluTableContainer.classList.add('hidden');
+            } else {
+                jianjingHint.classList.add('hidden');
+                guangluHint.classList.remove('hidden');
+                jianjingTableContainer.classList.add('hidden');
+                guangluTableContainer.classList.remove('hidden');
+            }
+            
+            // 如果已有数据，重新渲染表格
+            if (processedData.length > 0) {
+                if (software === 'jianjing') {
+                    displayJianjingTable(processedData);
+                } else {
+                    displayGuangluTable(processedData);
+                }
+            }
+        }
 
         // 拖拽上传
         uploadArea.addEventListener('click', () => fileInput.click());
@@ -575,6 +753,7 @@
 
                 // 半周长 = 宽 + 高（mm）
                 const perimeter = dims.width + dims.height;
+                const perimeterStr = perimeter + 'mm';
 
                 // 套用定额
                 const quota = applyQuota(dims.width, dims.height, dims.thickness, typeInfo.category);
@@ -585,6 +764,9 @@
                 // 项目特征
                 const features = generateFeatures(name, dimStr, installMethod);
 
+                // 未计价材编码（每个清单项递增）
+                const materialCode = 'Z00741-' + String(index).padStart(3, '0');
+
                 results.push({
                     index: index++,
                     listCode: typeInfo.listCode,
@@ -594,11 +776,13 @@
                     height: dims.height,
                     thickness: dims.thickness,
                     perimeter: perimeter,
+                    perimeterStr: perimeterStr,
                     quotaCode: quota.code,
                     quotaName: quota.name,
                     installMethod: installMethod,
                     quantity: quantity,
-                    features: features
+                    features: features,
+                    materialCode: materialCode
                 });
             }
 
@@ -612,9 +796,32 @@
             statusArea.classList.remove('hidden');
         }
 
-        // 显示结果
+        // 显示结果（根据当前软件格式）
         function displayResults(data) {
-            tableBody.innerHTML = '';
+            if (currentSoftware === 'jianjing') {
+                displayJianjingTable(data);
+            } else {
+                displayGuangluTable(data);
+            }
+
+            // 统计
+            const peidianxiangCount = data.filter(d => d.listCode === '030402011').length;
+            const peidianguiCount = data.filter(d => d.listCode === '030402010').length;
+
+            document.getElementById('totalCount').textContent = data.length;
+            document.getElementById('peidianxiangCount').textContent = peidianxiangCount;
+            document.getElementById('peidianguiCount').textContent = peidianguiCount;
+
+            summaryArea.classList.remove('hidden');
+            btnGroup.classList.remove('hidden');
+        }
+
+        // 显示建经科技表格
+        function displayJianjingTable(data) {
+            jianjingTableBody.innerHTML = '';
+            jianjingTableContainer.classList.remove('hidden');
+            guangluTableContainer.classList.add('hidden');
+            
             data.forEach(item => {
                 const tr = document.createElement('tr');
                 tr.innerHTML =
@@ -627,20 +834,68 @@
                     '<td class="left-align" style="max-width:220px;overflow:hidden;text-overflow:ellipsis;">' + item.quotaName + '</td>' +
                     '<td>' + item.quantity + '</td>' +
                     '<td class="left-align" style="text-align:left;white-space:pre-line;max-width:350px;font-size:11px;">' + item.features.replace(/\n/g, '<br>') + '</td>';
-                tableBody.appendChild(tr);
+                jianjingTableBody.appendChild(tr);
             });
+        }
 
-            // 统计
-            const peidianxiangCount = data.filter(d => d.listCode === '030402011').length;
-            const peidianguiCount = data.filter(d => d.listCode === '030402010').length;
+        // 显示广联达表格（三行格式）
+        function displayGuangluTable(data) {
+            guangluTableBody.innerHTML = '';
+            guangluTableContainer.classList.remove('hidden');
+            jianjingTableContainer.classList.add('hidden');
+            
+            data.forEach(item => {
+                // 清单行
+                const tr1 = document.createElement('tr');
+                tr1.innerHTML =
+                    '<td>' + item.index + '</td>' +
+                    '<td class="left-align">' + item.name + '</td>' +
+                    '<td>' + item.dimStr + '</td>' +
+                    '<td>' + item.perimeterStr + '</td>' +
+                    '<td>' + item.quantity + '</td>' +
+                    '<td>' + item.listCode + '</td>' +
+                    '<td>清单行</td>' +
+                    '<td>' + item.name + '</td>' +
+                    '<td class="left-align" style="text-align:left;white-space:pre-line;font-size:11px;">' + item.features.replace(/\n/g, '<br>') + '</td>' +
+                    '<td>台</td>' +
+                    '<td>' + item.quantity + '</td>' +
+                    '<td>0</td>';
+                guangluTableBody.appendChild(tr1);
 
-            document.getElementById('totalCount').textContent = data.length;
-            document.getElementById('peidianxiangCount').textContent = peidianxiangCount;
-            document.getElementById('peidianguiCount').textContent = peidianguiCount;
+                // 定额行
+                const tr2 = document.createElement('tr');
+                tr2.innerHTML =
+                    '<td>' + item.index + '.1</td>' +
+                    '<td></td>' +
+                    '<td></td>' +
+                    '<td></td>' +
+                    '<td></td>' +
+                    '<td>' + item.quotaCode + '</td>' +
+                    '<td>定额行</td>' +
+                    '<td>' + item.name + '</td>' +
+                    '<td></td>' +
+                    '<td>台</td>' +
+                    '<td>' + item.quantity + '</td>' +
+                    '<td></td>';
+                guangluTableBody.appendChild(tr2);
 
-            summaryArea.classList.remove('hidden');
-            btnGroup.classList.remove('hidden');
-            tableContainer.classList.remove('hidden');
+                // 未计价材行
+                const tr3 = document.createElement('tr');
+                tr3.innerHTML =
+                    '<td>' + item.index + '.2</td>' +
+                    '<td></td>' +
+                    '<td></td>' +
+                    '<td></td>' +
+                    '<td></td>' +
+                    '<td>' + item.materialCode + '</td>' +
+                    '<td>未计价材行</td>' +
+                    '<td>' + item.name + '</td>' +
+                    '<td></td>' +
+                    '<td>台</td>' +
+                    '<td>' + item.quantity + '</td>' +
+                    '<td>0</td>';
+                guangluTableBody.appendChild(tr3);
+            });
         }
 
         // 导出Excel
@@ -650,8 +905,17 @@
                 return;
             }
 
-            // 广联达15列三行结构
-            // 表头行
+            if (currentSoftware === 'jianjing') {
+                exportJianjingExcel();
+            } else {
+                exportGuangluExcel();
+            }
+            showStatus('Excel 文件已导出！', 'success');
+        }
+
+        // 导出建经科技格式Excel
+        function exportJianjingExcel() {
+            // 建经科技9列结构
             const wsData = [
                 ['序号', '清单编码', '项目名称', '尺寸', '半周长(mm)', '定额编码',
                  '定额名称', '数量', '项目特征']
@@ -697,9 +961,102 @@
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, '配电箱清单定额表');
 
-            const fileName = '配电箱清单定额表_' + new Date().toISOString().slice(0, 10) + '.xlsx';
+            const fileName = '配电箱清单定额表_建经_' + new Date().toISOString().slice(0, 10) + '.xlsx';
             XLSX.writeFile(wb, fileName);
-            showStatus('Excel 文件已导出！', 'success');
+        }
+
+        // 导出广联达格式Excel
+        function exportGuangluExcel() {
+            // 广联达12列三行结构
+            const wsData = [
+                ['序号', '项目名称', '尺寸', '半周长', '工程量', '项目编码', '行类型', '名称', '项目特征', '单位', '工程量', '主材单价']
+            ];
+
+            processedData.forEach(item => {
+                // 清单行
+                wsData.push([
+                    item.index,              // A: 序号
+                    item.name,               // B: 项目名称
+                    item.dimStr,             // C: 尺寸
+                    item.perimeterStr,       // D: 半周长
+                    item.quantity,           // E: 工程量
+                    item.listCode,           // F: 项目编码（清单编码）
+                    '清单行',                // G: 行类型
+                    item.name,               // H: 名称
+                    item.features,           // I: 项目特征
+                    '台',                    // J: 单位
+                    item.quantity,           // K: 工程量
+                    0                         // L: 主材单价
+                ]);
+
+                // 定额行
+                wsData.push([
+                    item.index + '.1',       // A: 序号
+                    '',                       // B: 项目名称
+                    '',                       // C: 尺寸
+                    '',                       // D: 半周长
+                    '',                       // E: 工程量
+                    item.quotaCode,           // F: 项目编码（定额编码）
+                    '定额行',                // G: 行类型
+                    item.name,               // H: 名称
+                    '',                       // I: 项目特征
+                    '台',                    // J: 单位
+                    item.quantity,           // K: 工程量
+                    ''                        // L: 主材单价（留空）
+                ]);
+
+                // 未计价材行
+                wsData.push([
+                    item.index + '.2',       // A: 序号
+                    '',                       // B: 项目名称
+                    '',                       // C: 尺寸
+                    '',                       // D: 半周长
+                    '',                       // E: 工程量
+                    item.materialCode,       // F: 项目编码（未计价材编码）
+                    '未计价材行',            // G: 行类型
+                    item.name,               // H: 名称
+                    '',                       // I: 项目特征
+                    '台',                    // J: 单位
+                    item.quantity,           // K: 工程量
+                    0                         // L: 主材单价
+                ]);
+            });
+
+            const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+            // 设置列宽
+            ws['!cols'] = [
+                { wch: 10 },   // A: 序号
+                { wch: 25 },   // B: 项目名称
+                { wch: 18 },   // C: 尺寸
+                { wch: 12 },   // D: 半周长
+                { wch: 8 },    // E: 工程量
+                { wch: 14 },   // F: 项目编码
+                { wch: 12 },   // G: 行类型
+                { wch: 25 },   // H: 名称
+                { wch: 50 },   // I: 项目特征
+                { wch: 6 },    // J: 单位
+                { wch: 8 },    // K: 工程量
+                { wch: 10 }    // L: 主材单价
+            ];
+
+            // 设置行高
+            const rowHeight = [{ hpt: 30 }]; // 表头行高
+            processedData.forEach(item => {
+                const lines = (item.features.match(/\n/g) || []).length + 1;
+                // 清单行高一些（因为有项目特征）
+                rowHeight.push({ hpt: Math.max(lines * 15, 30) });
+                // 定额行和未计价材行矮一些
+                rowHeight.push({ hpt: 20 });
+                rowHeight.push({ hpt: 20 });
+            });
+            ws['!rows'] = rowHeight;
+
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, '配电箱清单定额表');
+
+            const fileName = '配电箱清单定额表_广联达_' + new Date().toISOString().slice(0, 10) + '.xlsx';
+            XLSX.writeFile(wb, fileName);
         }
 
         // 重置页面
@@ -709,8 +1066,10 @@
             statusArea.classList.add('hidden');
             summaryArea.classList.add('hidden');
             btnGroup.classList.add('hidden');
-            tableContainer.classList.add('hidden');
-            tableBody.innerHTML = '';
+            jianjingTableContainer.classList.add('hidden');
+            guangluTableContainer.classList.add('hidden');
+            jianjingTableBody.innerHTML = '';
+            guangluTableBody.innerHTML = '';
         }
     </script>
 </body>
