@@ -723,9 +723,14 @@
             }
         }
 
-        // 生成项目特征
+        // 生成项目特征（广联达格式）
         function generateFeatures(name, dimStr, installMethod) {
             return '1.名称:' + name + '\n2.规格:' + dimStr + '\n3.安装方式:' + installMethod + '\n4.含接线箱或木套箱、含槽钢、含端子接线\n5.其他:满足招标图纸、招标文件、技术标准及相关图集规范要求';
+        }
+
+        // 生成项目特征（建经科技格式）
+        function generateJianjingFeatures(name, dimStr) {
+            return '项目特征：1.项目名称：' + name + '\n2.' + dimStr + '\n3.其他详见招标文件、设计图纸及相关规范\n工程内容：1.含接线箱或木套箱、含槽钢、含端子接线等全部工作内容\n其他说明：1.参照图纸及招标文件的技术要求\n2.满足施工及验收相关规范要求\n3.包括为完成该项目所需的各项含各种损耗的主辅材费用及施工费用\n4.该清单项不仅限于上述说明，应包含深化设计的所有内容，为完成该项工作内容所需的所有辅助工作请投标人在综合单价中考虑，达到竣工交验标准';
         }
 
         // 数据处理函数
@@ -770,8 +775,11 @@
                 const wallMountCodes = ['2-305', '2-306', '2-307', '2-308', '2-309'];
                 const installMethod = wallMountCodes.includes(quota.code) ? '壁挂安装' : '落地安装';
 
-                // 项目特征
+                // 项目特征（广联达格式）
                 const features = generateFeatures(name, dimStr, installMethod);
+
+                // 项目特征（建经科技格式）
+                const jianjingFeatures = generateJianjingFeatures(name, dimStr);
 
                 // 未计价材编码（每个清单项递增）
                 const materialCode = 'Z00741-' + String(index).padStart(3, '0');
@@ -791,6 +799,7 @@
                     installMethod: installMethod,
                     quantity: quantity,
                     features: features,
+                    jianjingFeatures: jianjingFeatures,
                     materialCode: materialCode
                 });
             }
@@ -940,7 +949,7 @@
                     item.quotaCode,          // F: 定额编码
                     item.quotaName,          // G: 定额名称
                     item.quantity,           // H: 数量
-                    item.features            // I: 项目特征
+                    item.jianjingFeatures    // I: 项目特征（建经格式）
                 ]);
             });
 
@@ -962,7 +971,7 @@
             // 设置行高
             const rowHeight = [{ hpt: 30 }]; // 表头行高
             processedData.forEach(item => {
-                const lines = (item.features.match(/\n/g) || []).length + 1;
+                const lines = (item.jianjingFeatures.match(/\n/g) || []).length + 1;
                 rowHeight.push({ hpt: Math.max(lines * 15, 30) });
             });
             ws['!rows'] = rowHeight;
