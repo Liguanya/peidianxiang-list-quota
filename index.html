@@ -725,12 +725,12 @@
 
         // 生成项目特征（广联达格式）
         function generateFeatures(name, dimStr, installMethod) {
-            return '1.名称:' + name + '\n2.规格:' + dimStr + '\n3.安装方式:' + installMethod + '\n4.含接线箱或木套箱、含槽钢、含端子接线\n5.其他:满足招标图纸、招标文件、技术标准及相关图集规范要求';
+            return '项目特征：1.名称：' + name + ' 2.安装方式：' + installMethod + ' 3.规格：' + dimStr + ' 4.其他详见招标文件、设计图纸及相关规范\n工程内容：1.成套购置、运输、安装 2.接地 3.调试\n其他说明：1.参照图纸及招标文件的技术要求 2.满足施工及验收相关规范要求 3.该清单项不仅限于上述说明，应包含深化设计的所有内容，以及为完成该项目所需的各种损耗的主辅材费用及全部施工费用，达到竣工交验标准';
         }
 
         // 生成项目特征（建经科技格式）
-        function generateJianjingFeatures(name, dimStr) {
-            return '项目特征：1.项目名称：' + name + '\n2.' + dimStr + '\n3.其他详见招标文件、设计图纸及相关规范\n工程内容：1.含接线箱或木套箱、含槽钢、含端子接线等全部工作内容\n其他说明：1.参照图纸及招标文件的技术要求 2.满足施工及验收相关规范要求 3.该清单项不仅限于上述说明，应包含深化设计的所有内容，以及为完成该项目所需的各种损耗的主辅材费用及全部施工费用，达到竣工交验标准';
+        function generateJianjingFeatures(name, dimStr, installMethod) {
+            return '项目特征：1.名称：' + name + ' 2.安装方式：' + installMethod + ' 3.规格：' + dimStr + ' 4.其他详见招标文件、设计图纸及相关规范\n工程内容：1.成套购置、运输、安装 2.接地 3.调试\n其他说明：1.参照图纸及招标文件的技术要求 2.满足施工及验收相关规范要求 3.该清单项不仅限于上述说明，应包含深化设计的所有内容，以及为完成该项目所需的各种损耗的主辅材费用及全部施工费用，达到竣工交验标准';
         }
 
         // 数据处理函数
@@ -779,7 +779,7 @@
                 const features = generateFeatures(name, dimStr, installMethod);
 
                 // 项目特征（建经科技格式）
-                const jianjingFeatures = generateJianjingFeatures(name, dimStr);
+                const jianjingFeatures = generateJianjingFeatures(name, dimStr, installMethod);
 
                 // 未计价材编码（每个清单项递增）
                 const materialCode = 'Z00741-' + String(index).padStart(3, '0');
