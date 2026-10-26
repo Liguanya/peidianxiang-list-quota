@@ -1,6 +1,7 @@
 const fs=require('fs'),vm=require('vm');
 const html=fs.readFile ? null : null;
-const src=fs.readFileSync('../index.html','utf8');
+const path=require('path');
+const src=fs.readFileSync(path.join(__dirname,'..','index.html'),'utf8');
 const script=src.match(/<script>([\s\S]*?)<\/script>/g).map(s=>s.replace(/<\/?script>/g,'')).filter(s=>s.length>1000)[0];
 
 // mock DOM
