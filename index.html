@@ -342,6 +342,43 @@
             border-bottom: 1px solid #90caf9;
             text-align: center;
         }
+        /* 行内下拉选择（配电箱形式 / 半周长档） */
+        .cell-select {
+            width: 100%;
+            min-width: 84px;
+            padding: 5px 6px;
+            border: 1px solid #1a5e63;
+            border-radius: 6px;
+            background: #fff;
+            color: #0d3d44;
+            font-size: 12px;
+            text-align: center;
+            cursor: pointer;
+            outline: none;
+        }
+        .cell-select:focus {
+            border-color: #0d3d44;
+            box-shadow: 0 0 0 2px rgba(26,94,99,0.18);
+        }
+        .cell-select:disabled {
+            background: #f2f4f4;
+            color: #8a9798;
+            border-color: #d6dcdc;
+            cursor: not-allowed;
+            -webkit-text-fill-color: #8a9798;
+            opacity: 1;
+        }
+        .cell-static {
+            display: inline-block;
+            padding: 4px 8px;
+            font-size: 12px;
+            color: #555;
+            white-space: nowrap;
+        }
+        .cell-static.locked {
+            color: #1a5e63;
+            font-weight: 600;
+        }
         @media (max-width: 768px) {
             .header h1 { font-size: 22px; }
             .upload-area { padding: 30px; }
@@ -362,9 +399,10 @@
                 <h3>📋 使用说明</h3>
                 <ul>
                     <li>上传包含配电箱/柜工程量清单的 Excel 文件（支持 .xlsx、.xls 格式）</li>
-                    <li>表格中需包含 <strong>A列=产品名称</strong>、<strong>B列=尺寸</strong>（宽×高×厚，单位mm）、<strong>C列=数量</strong></li>
-                    <li>系统自动套用天津2025清单编码、定额编码，生成完整项目特征</li>
-                    <li>点击「导出Excel」下载处理后的清单定额报价表</li>
+                    <li>统一三列格式：<strong>A列=序号</strong>、<strong>B列=项目名称</strong>、<strong>C列=数量</strong>（无需再填尺寸）</li>
+                    <li>上传后在结果表的<strong>「配电箱形式」</strong>列手选落地式/壁挂式，并在<strong>「半周长」</strong>列选择档位，定额实时自动匹配</li>
+                    <li>名称含开关柜/低压柜/高压柜等柜类时，自动锁定落地式并按配电柜精准定额匹配</li>
+                    <li>系统自动套用天津2025清单编码、定额编码，生成完整项目特征；点击「导出Excel」下载</li>
                     <li>所有数据处理在本地完成，不会上传到任何服务器</li>
                 </ul>
             </div>
@@ -380,18 +418,18 @@
 
             <!-- 建经科技格式说明（默认显示） -->
             <div id="jianjingHint" class="input-format-hint">
-                <b>📌 建经科技 Excel输入格式示例：</b>
+                <b>📌 统一输入格式示例（A序号 / B项目名称 / C数量）：</b>
                 <table>
-                    <tr><th>A列-产品名称</th><th>B列-尺寸（宽×高×厚）</th><th>C列-数量</th></tr>
-                    <tr><td>配电箱AL1</td><td>600×800×200</td><td>2</td></tr>
-                    <tr><td>配电箱AP1</td><td>800×1200×300</td><td>3</td></tr>
-                    <tr><td>低压配电柜AN1</td><td>1000×2000×600</td><td>1</td></tr>
+                    <tr><th>A列-序号</th><th>B列-项目名称</th><th>C列-数量</th></tr>
+                    <tr><td>1</td><td>配电箱AL1</td><td>2</td></tr>
+                    <tr><td>2</td><td>配电箱AP1</td><td>3</td></tr>
+                    <tr><td>3</td><td>低压开关柜AN1</td><td>1</td></tr>
                 </table>
                 <div style="margin-top:10px;font-size:12px;color:#555;">
-                    <b>⚠️ 定额套用判断规则：</b><br>
-                    &nbsp;&nbsp;• <b>落地式（2-304）</b>：宽&gt;800 <b>或</b> 高&gt;1200 <b>或</b> 厚&gt;300 → 三者满足其一即套用<br>
-                    &nbsp;&nbsp;• <b>悬挂嵌入式（2-305~2-309）</b>：宽≤800 <b>且</b> 高≤1200 <b>且</b> 厚≤300 → 三个条件必须全部满足<br>
-                    &nbsp;&nbsp;• <b>半周长</b> = 宽 + 高（单位mm），换算为米后对应定额分档
+                    <b>⚠️ 定额套用规则（在结果表内手选，实时联动）：</b><br>
+                    &nbsp;&nbsp;• <b>配电箱形式=落地式</b>：半周长无需选择，直接匹配 <b>2-304</b>（成套配电箱安装 落地式）<br>
+                    &nbsp;&nbsp;• <b>配电箱形式=壁挂式</b>：按半周长分档 → 0.5m以内 <b>2-305</b>、1.0m以内 <b>2-306</b>、1.5m以内 <b>2-307</b>、2.0m以内 <b>2-308</b>、2.5m以内 <b>2-309</b><br>
+                    &nbsp;&nbsp;• <b>开关柜/低压柜/高压柜等</b>：形式自动锁定落地式、半周长留空，低压 <b>2-282</b>、高压 <b>2-85</b> 精准匹配
                 </div>
             </div>
 
@@ -403,11 +441,11 @@
                     <b>示例结构：</b>
                     <table>
                         <tr>
-                            <th>A序号</th><th>B项目名称</th><th>C尺寸</th><th>D半周长</th><th>E工程量</th>
+                            <th>A序号</th><th>B项目名称</th><th>C配电箱形式</th><th>D半周长</th><th>E工程量</th>
                             <th>F项目编码</th><th>G行类型</th><th>H名称</th><th>I项目特征</th>
                             <th>J单位</th><th>K工程量</th><th>L主材单价</th>
                         </tr>
-                        <tr><td>1</td><td>配电箱AL1</td><td>800*1500*300</td><td>2300mm</td><td>1</td><td>030402010</td><td>清单行</td><td>配电箱AL1</td><td>项目特征...</td><td>台</td><td>1</td><td>0</td></tr>
+                        <tr><td>1</td><td>配电箱AL1</td><td>壁挂式</td><td>1.0m以内</td><td>1</td><td>030402011</td><td>清单行</td><td>配电箱AL1</td><td>项目特征...</td><td>台</td><td>1</td><td>0</td></tr>
                         <tr><td>1.1</td><td></td><td></td><td></td><td></td><td>2-304</td><td>定额行</td><td>配电箱AL1</td><td></td><td>台</td><td>1</td><td></td></tr>
                         <tr><td>1.2</td><td></td><td></td><td></td><td></td><td>Z00741-001</td><td>未计价材行</td><td>配电箱AL1</td><td></td><td>台</td><td>1</td><td>0</td></tr>
                     </table>
@@ -451,8 +489,8 @@
                             <th class="col-seq">序号</th>
                             <th class="col-code">清单编码</th>
                             <th class="col-name">项目名称</th>
-                            <th class="col-dim">尺寸（宽×高×厚）</th>
-                            <th class="col-peri">半周长(mm)</th>
+                            <th class="col-dim">配电箱形式</th>
+                            <th class="col-peri">半周长</th>
                             <th class="col-quota">定额编码</th>
                             <th class="col-quota-name">定额名称</th>
                             <th class="col-qty">数量</th>
@@ -470,7 +508,7 @@
                         <tr>
                             <th class="col-gl">序号</th>
                             <th class="col-material">项目名称</th>
-                            <th class="col-gl">尺寸</th>
+                            <th class="col-gl">配电箱形式</th>
                             <th class="col-gl">半周长</th>
                             <th class="col-gl">工程量</th>
                             <th class="col-material-code">项目编码</th>
@@ -563,6 +601,10 @@
         resetBtn.addEventListener('click', resetPage);
         exportBtn.addEventListener('click', exportExcel);
 
+        // 行内“配电箱形式 / 半周长”下拉变化（事件委托，两个表通用）
+        jianjingTableBody.addEventListener('change', onCellChange);
+        guangluTableBody.addEventListener('change', onCellChange);
+
         // 处理上传文件
         function handleFile(file) {
             const validTypes = [
@@ -580,14 +622,15 @@
                     const data = new Uint8Array(e.target.result);
                     const workbook = XLSX.read(data, { type: 'array', cellDates: true });
                     const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                    const jsonData = XLSX.utils.sheet_to_json(firstSheet, { defval: '' });
+                    // 统一3列：A序号 B项目名称 C数量，按列数组读取
+                    const aoa = XLSX.utils.sheet_to_json(firstSheet, { header: 1, defval: '', raw: true });
 
-                    if (jsonData.length === 0) {
+                    if (!aoa || aoa.length === 0) {
                         showStatus('Excel 文件中没有数据！', 'error');
                         return;
                     }
 
-                    processedData = processData(jsonData);
+                    processedData = processData(aoa);
                     if (processedData.length === 0) {
                         showStatus('未识别到有效的配电箱/柜数据，请检查A列产品名称！', 'error');
                         return;
@@ -603,20 +646,40 @@
 
         // ==================== 核心数据处理 ====================
 
-        // 识别配电箱类型
+        // 壁挂式半周长分档（米）→ 定额 2-305 起逐档 +1
+        const PERIMETER_TIERS = [
+            { tier: '0.5', label: '半周长0.5m以内', code: '2-305', qname: '成套配电箱安装 悬挂嵌入式 半周长0.5m以内' },
+            { tier: '1.0', label: '半周长1.0m以内', code: '2-306', qname: '成套配电箱安装 悬挂嵌入式 半周长1.0m以内' },
+            { tier: '1.5', label: '半周长1.5m以内', code: '2-307', qname: '成套配电箱安装 悬挂嵌入式 半周长1.5m以内' },
+            { tier: '2.0', label: '半周长2.0m以内', code: '2-308', qname: '成套配电箱安装 悬挂嵌入式 半周长2.0m以内' },
+            { tier: '2.5', label: '半周长2.5m以内', code: '2-309', qname: '成套配电箱安装 悬挂嵌入式 半周长2.5m以内' }
+        ];
+        const DEFAULT_TIER = '1.0';
+        const FLOOR_CODE = { code: '2-304', qname: '成套配电箱安装 落地式' };
+        const LOW_VOLT_CABINET = { code: '2-282', qname: '控制、继电、模拟及配电屏安装 电源屏（低压开关柜）' };
+        const HIGH_VOLT_CABINET = { code: '2-85', qname: '高压成套配电柜安装 单母线柜 电容器柜、其他柜' };
+
+        // 识别配电箱/柜类型
         function identifyType(name) {
             if (!name || typeof name !== 'string') return null;
             const n = name.trim();
 
-            // 配电柜类关键词
-            const guiKeywords = ['配电柜', '高压配电柜', '低压配电柜', '受电柜', '进线柜', '出线柜',
+            // 配电柜/开关柜类关键词
+            const guiKeywords = ['开关柜', '低压开关柜', '高压开关柜', '低压柜', '高压柜', '中置柜', '环网柜',
+                '配电柜', '高压配电柜', '低压配电柜', '受电柜', '进线柜', '出线柜',
                 '母联柜', '电容柜', '补偿柜', '联络柜', '切换柜', '总柜', '主柜', '馈线柜',
-                '功率补偿柜', '无功补偿柜', '电容补偿柜'];
+                '功率补偿柜', '无功补偿柜', '电容补偿柜', '配电屏', '电源屏', '控制柜'];
 
-            // 先检查是否包含配电柜关键词
+            // 柜类优先
             for (const kw of guiKeywords) {
                 if (n.includes(kw)) {
-                    return { category: '配电柜', listCode: '030402010' };
+                    // 含“低压”→低压开关柜 2-282；其余柜（含高压、裸开关柜）→高压成套配电柜 2-85（沿用原规则）
+                    const isLow = n.includes('低压');
+                    return {
+                        category: '配电柜', listCode: '030402010', isCabinet: true,
+                        cabinetCode: isLow ? LOW_VOLT_CABINET.code : HIGH_VOLT_CABINET.code,
+                        cabinetName: isLow ? LOW_VOLT_CABINET.qname : HIGH_VOLT_CABINET.qname
+                    };
                 }
             }
 
@@ -629,182 +692,117 @@
 
             for (const kw of xiangKeywords) {
                 if (n.includes(kw)) {
-                    return { category: '配电箱', listCode: '030402011' };
+                    return { category: '配电箱', listCode: '030402011', isCabinet: false };
                 }
             }
 
             return null; // 无法识别
         }
 
-        // 提取尺寸：支持 600*800*200 或 600X800X200
-        function extractDimensions(dimStr) {
-            if (!dimStr || typeof dimStr !== 'string') {
-                return { width: 0, height: 0, thickness: 0 };
+        // 根据当前“配电箱形式 + 半周长档 + 柜类型”实时重算定额
+        function recomputeQuota(item) {
+            // 柜类：锁定落地，按低压/高压精准定额
+            if (item.isCabinet) {
+                item.form = 'floor';
+                item.perimeterTier = '';
+                item.quotaCode = item.cabinetCode;
+                item.quotaName = item.cabinetName;
+                item.installMethod = '落地安装';
+                return;
             }
-            const s = dimStr.trim().replace(/\s/g, '');
-
-            // 匹配 宽*高*厚 或 宽X高X厚
-            // 格式：数字*数字*数字 或 数字X数字X数字
-            // 支持括号内加法如 800X(1000+800)X300
-            const match3d = s.match(/(\d+)(?:[Xx\*×]|X\()(\d+)(?:[Xx\*×])(\d+)/);
-            if (match3d) {
-                let w = parseFloat(match3d[1]);
-                let h = parseFloat(match3d[2]);
-                let t = parseFloat(match3d[3]);
-                // 处理括号加法
-                const parenMatch = dimStr.match(/\((\d+)\+(\d+)\)/g);
-                if (parenMatch) {
-                    parenMatch.forEach(m => {
-                        const nums = m.match(/\d+/g);
-                        if (nums && nums.length === 2) {
-                            h = parseFloat(nums[0]) + parseFloat(nums[1]);
-                        }
-                    });
-                }
-                return { width: w, height: h, thickness: t };
+            // 普通配电箱
+            if (item.form === 'floor') {
+                item.perimeterTier = '';
+                item.quotaCode = FLOOR_CODE.code;
+                item.quotaName = FLOOR_CODE.qname;
+                item.installMethod = '落地安装';
+            } else {
+                const t = PERIMETER_TIERS.find(x => x.tier === String(item.perimeterTier)) ||
+                          PERIMETER_TIERS.find(x => x.tier === DEFAULT_TIER);
+                item.perimeterTier = t.tier;
+                item.quotaCode = t.code;
+                item.quotaName = t.qname;
+                item.installMethod = '壁挂安装';
             }
-
-            // 匹配 宽*高（两段）
-            const match2d = s.match(/(\d+)(?:[Xx\*×])(\d+)/);
-            if (match2d) {
-                return {
-                    width: parseFloat(match2d[1]),
-                    height: parseFloat(match2d[2]),
-                    thickness: 0
-                };
-            }
-
-            return { width: 0, height: 0, thickness: 0 };
         }
 
-        // 套用定额
-        function applyQuota(width, height, thickness, category, name) {
-            // 优先识别低压配电柜/低压柜，套用2-282
-            if (name && (name.includes('低压配电柜') || name.includes('低压柜'))) {
-                return {
-                    code: '2-282',
-                    name: '控制、继电、模拟及配电屏安装 电源屏（低压开关柜）'
-                };
+        // 项目特征中的安装方式描述
+        function installSpec(item) {
+            if (item.isCabinet) {
+                return '落地安装';
             }
-
-            if (category === '配电柜') {
-                // 高压配电柜：2-85
-                return {
-                    code: '2-85',
-                    name: '高压成套配电柜安装 单母线柜 电容器柜、其他柜'
-                };
-            }
-
-            // 配电箱：判断安装方式
-            if (width <= 800 && height <= 1200 && thickness <= 300) {
-                // 悬挂嵌入式：根据半周长套用
-                const perimeterM = (width + height) / 1000; // 转换为米
-                if (perimeterM <= 0.5) {
-                    return { code: '2-305', name: '成套配电箱安装 悬挂嵌入式 半周长0.5m以内' };
-                } else if (perimeterM <= 1.0) {
-                    return { code: '2-306', name: '成套配电箱安装 悬挂嵌入式 半周长1.0m以内' };
-                } else if (perimeterM <= 1.5) {
-                    return { code: '2-307', name: '成套配电箱安装 悬挂嵌入式 半周长1.5m以内' };
-                } else if (perimeterM <= 2.0) {
-                    return { code: '2-308', name: '成套配电箱安装 悬挂嵌入式 半周长2.0m以内' };
-                } else if (perimeterM <= 2.5) {
-                    return { code: '2-308', name: '成套配电箱安装 悬挂嵌入式 半周长2.5m以内' };
-                } else if (perimeterM <= 3.0) {
-                    return { code: '2-309', name: '成套配电箱安装 悬挂嵌入式 半周长3.0m以内' };
-                } else {
-                    return { code: '2-309', name: '成套配电箱安装 悬挂嵌入式 半周长3.0m以内' };
-                }
-            } else {
-                // 落地式
-                return {
-                    code: '2-304',
-                    name: '成套配电箱安装 落地式'
-                };
-            }
+            if (item.form === 'floor') return '落地安装';
+            const t = PERIMETER_TIERS.find(x => x.tier === String(item.perimeterTier));
+            return '壁挂（悬挂嵌入式）安装 ' + (t ? t.label : '');
         }
 
         // 生成项目特征（广联达格式）
-        function generateFeatures(name, dimStr, installMethod) {
-            return '项目特征：1.名称：' + name + ' 2.安装方式：' + installMethod + ' 3.规格：' + dimStr + ' 4.其他详见招标文件、设计图纸及相关规范\n工程内容：1.成套购置、运输、安装 2.接地 3.调试\n其他说明：1.参照图纸及招标文件的技术要求 2.满足施工及验收相关规范要求 3.该清单项不仅限于上述说明，应包含深化设计的所有内容，以及为完成该项目所需的各种损耗的主辅材费用及全部施工费用，达到竣工交验标准';
+        function generateFeatures(name, spec) {
+            return '项目特征：1.名称：' + name + ' 2.安装方式：' + spec + ' 3.其他详见招标文件、设计图纸及相关规范\n工程内容：1.成套购置、运输、安装 2.接地 3.调试\n其他说明：1.参照图纸及招标文件的技术要求 2.满足施工及验收相关规范要求 3.该清单项不仅限于上述说明，应包含深化设计的所有内容，以及为完成该项目所需的各种损耗的主辅材费用及全部施工费用，达到竣工交验标准';
         }
 
         // 生成项目特征（建经科技格式）
-        function generateJianjingFeatures(name, dimStr, installMethod) {
-            return '项目特征：1.名称：' + name + ' 2.安装方式：' + installMethod + ' 3.规格：' + dimStr + ' 4.其他详见招标文件、设计图纸及相关规范\n工程内容：1.成套购置、运输、安装 2.接地 3.调试\n其他说明：1.参照图纸及招标文件的技术要求 2.满足施工及验收相关规范要求 3.该清单项不仅限于上述说明，应包含深化设计的所有内容，以及为完成该项目所需的各种损耗的主辅材费用及全部施工费用，达到竣工交验标准';
+        function generateJianjingFeatures(name, spec) {
+            return '项目特征：1.名称：' + name + ' 2.安装方式：' + spec + ' 3.其他详见招标文件、设计图纸及相关规范\n工程内容：1.成套购置、运输、安装 2.接地 3.调试\n其他说明：1.参照图纸及招标文件的技术要求 2.满足施工及验收相关规范要求 3.该清单项不仅限于上述说明，应包含深化设计的所有内容，以及为完成该项目所需的各种损耗的主辅材费用及全部施工费用，达到竣工交验标准';
         }
 
-        // 数据处理函数
-        function processData(data) {
+        // 数据处理函数：入参为二维数组（A序号 B项目名称 C数量）
+        function processData(aoa) {
             const results = [];
             let index = 1;
 
-            for (const row of data) {
-                // 获取A列（产品名称）
-                const name = row['A'] || row['a'] || row['产品名称'] || row['名称'] ||
-                    Object.values(row)[0];
+            for (const row of aoa) {
+                if (!Array.isArray(row)) continue;
+                const cellA = row[0] == null ? '' : String(row[0]).trim();
+                const cellB = row[1] == null ? '' : String(row[1]).trim();
+                const cellC = row[2];
 
-                if (!name || typeof name !== 'string') continue;
+                // B列项目名称
+                const name = cellB;
+                if (!name) continue;
 
-                // 识别类型
+                // 跳过表头行（B列出现“名称/项目名称”等字样）
+                if (/^(项目名称|产品名称|名称|设备名称)$/.test(name)) continue;
+
                 const typeInfo = identifyType(name);
                 if (!typeInfo) continue;
 
-                // 获取B列（尺寸）
-                const dimRaw = row['B'] || row['b'] || row['尺寸'] ||
-                    (Object.values(row).length > 1 ? Object.values(row)[1] : '');
-                const dims = extractDimensions(String(dimRaw));
+                // C列数量，缺省1
+                const quantity = (cellC !== '' && cellC !== null && cellC !== undefined && !isNaN(parseFloat(cellC)))
+                    ? parseFloat(cellC) : 1;
 
-                // 获取C列（数量）
-                const qtyRaw = row['C'] || row['c'] || row['数量'] ||
-                    (Object.values(row).length > 2 ? Object.values(row)[2] : 1);
-                const quantity = parseFloat(qtyRaw) || 1;
+                // A列序号：为数字则采用用户序号，否则用内部序号
+                const seq = /^\d+$/.test(cellA) ? parseInt(cellA, 10) : index;
 
-                // 构建尺寸字符串
-                const dimStr = dims.thickness > 0
-                    ? dims.width + '×' + dims.height + '×' + dims.thickness
-                    : dims.width + '×' + dims.height;
-
-                // 半周长 = 宽 + 高（mm）
-                const perimeter = dims.width + dims.height;
-                const perimeterStr = perimeter + 'mm';
-
-                // 套用定额（传入name用于识别低压配电柜）
-                const quota = applyQuota(dims.width, dims.height, dims.thickness, typeInfo.category, name);
-
-                // 安装方式：根据定额判断（2-85/2-282/2-304为落地安装，2-305~2-309为壁挂安装）
-                const wallMountCodes = ['2-305', '2-306', '2-307', '2-308', '2-309'];
-                const installMethod = wallMountCodes.includes(quota.code) ? '壁挂安装' : '落地安装';
-
-                // 项目特征（广联达格式）
-                const features = generateFeatures(name, dimStr, installMethod);
-
-                // 项目特征（建经科技格式）
-                const jianjingFeatures = generateJianjingFeatures(name, dimStr, installMethod);
-
-                // 未计价材编码（每个清单项递增）
-                const materialCode = 'Z00741-' + String(index).padStart(3, '0');
-
-                results.push({
-                    index: index++,
+                // 默认形式：柜类锁定落地；普通配电箱默认壁挂1.0m档（用户可在表内改）
+                const item = {
+                    _i: results.length,
+                    index: index,            // 内部序号（用于Z00741及定额子行）
+                    seq: seq,                // 用户A列序号
                     listCode: typeInfo.listCode,
                     name: name,
-                    dimStr: dimStr,
-                    width: dims.width,
-                    height: dims.height,
-                    thickness: dims.thickness,
-                    perimeter: perimeter,
-                    perimeterStr: perimeterStr,
-                    quotaCode: quota.code,
-                    quotaName: quota.name,
-                    installMethod: installMethod,
-                    quantity: quantity,
-                    features: features,
-                    jianjingFeatures: jianjingFeatures,
-                    materialCode: materialCode
-                });
+                    isCabinet: !!typeInfo.isCabinet,
+                    cabinetCode: typeInfo.cabinetCode || '',
+                    cabinetName: typeInfo.cabinetName || '',
+                    form: typeInfo.isCabinet ? 'floor' : 'wall',
+                    perimeterTier: typeInfo.isCabinet ? '' : DEFAULT_TIER,
+                    quantity: quantity
+                };
+                recomputeQuota(item);
+                item.materialCode = 'Z00741-' + String(index).padStart(3, '0');
+                refreshFeatures(item);
+                results.push(item);
+                index++;
             }
 
             return results;
+        }
+
+        // 形式/半周长变化后重算定额并刷新项目特征
+        function refreshFeatures(item) {
+            const spec = installSpec(item);
+            item.features = generateFeatures(item.name, spec);
+            item.jianjingFeatures = generateJianjingFeatures(item.name, spec);
         }
 
         // 显示状态
@@ -834,20 +832,65 @@
             btnGroup.classList.remove('hidden');
         }
 
+        // 构造“配电箱形式”单元格HTML（data-act=form）
+        function formCell(item) {
+            if (item.isCabinet) {
+                return '<span class="cell-static locked" title="开关柜/配电柜默认落地，按精准定额匹配">落地式</span>';
+            }
+            return '<select class="cell-select" data-act="form" data-idx="' + item._i + '">' +
+                '<option value="floor"' + (item.form === 'floor' ? ' selected' : '') + '>落地式</option>' +
+                '<option value="wall"' + (item.form === 'wall' ? ' selected' : '') + '>壁挂式</option>' +
+                '</select>';
+        }
+
+        // 构造“半周长”单元格HTML（data-act=peri，仅壁挂式可选）
+        function periCell(item) {
+            if (item.isCabinet) {
+                return '<span class="cell-static">—</span>';
+            }
+            if (item.form === 'floor') {
+                return '<span class="cell-static">—</span>';
+            }
+            let opts = PERIMETER_TIERS.map(t =>
+                '<option value="' + t.tier + '"' + (String(item.perimeterTier) === t.tier ? ' selected' : '') + '>' + t.label + '</option>'
+            ).join('');
+            return '<select class="cell-select" data-act="peri" data-idx="' + item._i + '">' + opts + '</select>';
+        }
+
+        // 行内选择变化：重算定额并刷新当前软件表格
+        function onCellChange(ev) {
+            const sel = ev.target;
+            if (!sel.matches || !sel.matches('select.cell-select')) return;
+            const idx = parseInt(sel.getAttribute('data-idx'), 10);
+            const act = sel.getAttribute('data-act');
+            const item = processedData[idx];
+            if (!item || item.isCabinet) return;
+            if (act === 'form') {
+                item.form = sel.value;
+            } else if (act === 'peri') {
+                item.perimeterTier = sel.value;
+            }
+            recomputeQuota(item);
+            refreshFeatures(item);
+            // 重渲染（保留当前软件视图）
+            if (currentSoftware === 'jianjing') displayJianjingTable(processedData);
+            else displayGuangluTable(processedData);
+        }
+
         // 显示建经科技表格
         function displayJianjingTable(data) {
             jianjingTableBody.innerHTML = '';
             jianjingTableContainer.classList.remove('hidden');
             guangluTableContainer.classList.add('hidden');
-            
+
             data.forEach(item => {
                 const tr = document.createElement('tr');
                 tr.innerHTML =
-                    '<td>' + item.index + '</td>' +
+                    '<td>' + item.seq + '</td>' +
                     '<td>' + item.listCode + '</td>' +
                     '<td class="left-align" style="max-width:160px;overflow:hidden;text-overflow:ellipsis;">' + item.name + '</td>' +
-                    '<td>' + item.dimStr + '</td>' +
-                    '<td>' + item.perimeter + '</td>' +
+                    '<td>' + formCell(item) + '</td>' +
+                    '<td>' + periCell(item) + '</td>' +
                     '<td>' + item.quotaCode + '</td>' +
                     '<td class="left-align" style="max-width:220px;overflow:hidden;text-overflow:ellipsis;">' + item.quotaName + '</td>' +
                     '<td>' + item.quantity + '</td>' +
@@ -861,15 +904,20 @@
             guangluTableBody.innerHTML = '';
             guangluTableContainer.classList.remove('hidden');
             jianjingTableContainer.classList.add('hidden');
-            
+
             data.forEach(item => {
+                const formLabel = item.isCabinet ? '落地式' : (item.form === 'floor' ? '落地式' : '壁挂式');
+                const periLabel = (item.form === 'wall' && !item.isCabinet)
+                    ? (PERIMETER_TIERS.find(t => t.tier === String(item.perimeterTier)) || {}).label || ''
+                    : '';
+
                 // 清单行
                 const tr1 = document.createElement('tr');
                 tr1.innerHTML =
-                    '<td>' + item.index + '</td>' +
+                    '<td>' + item.seq + '</td>' +
                     '<td class="left-align">' + item.name + '</td>' +
-                    '<td>' + item.dimStr + '</td>' +
-                    '<td>' + item.perimeterStr + '</td>' +
+                    '<td>' + formCell(item) + '</td>' +
+                    '<td>' + periCell(item) + '</td>' +
                     '<td>' + item.quantity + '</td>' +
                     '<td>' + item.listCode + '</td>' +
                     '<td>清单行</td>' +
@@ -883,10 +931,10 @@
                 // 定额行
                 const tr2 = document.createElement('tr');
                 tr2.innerHTML =
-                    '<td>' + item.index + '.1</td>' +
+                    '<td>' + item.seq + '.1</td>' +
                     '<td></td>' +
-                    '<td></td>' +
-                    '<td></td>' +
+                    '<td>' + formLabel + '</td>' +
+                    '<td>' + periLabel + '</td>' +
                     '<td></td>' +
                     '<td>' + item.quotaCode + '</td>' +
                     '<td>定额行</td>' +
@@ -900,7 +948,7 @@
                 // 未计价材行 - G列输出"子目下设备"
                 const tr3 = document.createElement('tr');
                 tr3.innerHTML =
-                    '<td>' + item.index + '.2</td>' +
+                    '<td>' + item.seq + '.2</td>' +
                     '<td></td>' +
                     '<td></td>' +
                     '<td></td>' +
@@ -931,21 +979,32 @@
             showStatus('Excel 文件已导出！', 'success');
         }
 
+        // 导出当前行的“形式”与“半周长”文本
+        function formText(item) {
+            if (item.isCabinet) return '落地式';
+            return item.form === 'floor' ? '落地式' : '壁挂式';
+        }
+        function periText(item) {
+            if (item.form !== 'wall' || item.isCabinet) return '';
+            const t = PERIMETER_TIERS.find(x => x.tier === String(item.perimeterTier));
+            return t ? t.label : '';
+        }
+
         // 导出建经科技格式Excel
         function exportJianjingExcel() {
             // 建经科技9列结构
             const wsData = [
-                ['序号', '清单编码', '项目名称', '尺寸', '半周长(mm)', '定额编码',
+                ['序号', '清单编码', '项目名称', '配电箱形式', '半周长', '定额编码',
                  '定额名称', '数量', '项目特征']
             ];
 
             processedData.forEach(item => {
                 wsData.push([
-                    item.index,              // A: 序号
+                    item.seq,                // A: 序号
                     item.listCode,           // B: 清单编码
                     item.name,               // C: 项目名称
-                    item.dimStr,             // D: 尺寸
-                    item.perimeter,          // E: 半周长
+                    formText(item),          // D: 配电箱形式
+                    periText(item),          // E: 半周长
                     item.quotaCode,          // F: 定额编码
                     item.quotaName,          // G: 定额名称
                     item.quantity,           // H: 数量
@@ -960,8 +1019,8 @@
                 { wch: 6 },    // A: 序号
                 { wch: 14 },   // B: 清单编码
                 { wch: 30 },   // C: 项目名称
-                { wch: 20 },   // D: 尺寸
-                { wch: 14 },   // E: 半周长
+                { wch: 12 },   // D: 配电箱形式
+                { wch: 16 },   // E: 半周长
                 { wch: 12 },   // F: 定额编码
                 { wch: 35 },   // G: 定额名称
                 { wch: 8 },    // H: 数量
@@ -987,16 +1046,16 @@
         function exportGuangluExcel() {
             // 广联达12列三行结构
             const wsData = [
-                ['序号', '项目名称', '尺寸', '半周长', '工程量', '项目编码', '行类型', '名称', '项目特征', '单位', '工程量', '主材单价']
+                ['序号', '项目名称', '配电箱形式', '半周长', '工程量', '项目编码', '行类型', '名称', '项目特征', '单位', '工程量', '主材单价']
             ];
 
             processedData.forEach(item => {
                 // 清单行
                 wsData.push([
-                    item.index,              // A: 序号
+                    item.seq,                // A: 序号
                     item.name,               // B: 项目名称
-                    item.dimStr,             // C: 尺寸
-                    item.perimeterStr,       // D: 半周长
+                    formText(item),          // C: 配电箱形式
+                    periText(item),          // D: 半周长
                     item.quantity,           // E: 工程量
                     item.listCode,           // F: 项目编码（清单编码）
                     '清单行',                // G: 行类型
@@ -1009,9 +1068,9 @@
 
                 // 定额行 - G列输出"定额行"，H列输出定额名称
                 wsData.push([
-                    item.index + '.1',       // A: 序号
+                    item.seq + '.1',         // A: 序号
                     '',                       // B: 项目名称
-                    '',                       // C: 尺寸
+                    '',                       // C: 配电箱形式
                     '',                       // D: 半周长
                     '',                       // E: 工程量
                     item.quotaCode,           // F: 项目编码（定额编码）
@@ -1025,9 +1084,9 @@
 
                 // 未计价材行 - G列输出"子目下设备"
                 wsData.push([
-                    item.index + '.2',       // A: 序号
+                    item.seq + '.2',         // A: 序号
                     '',                       // B: 项目名称
-                    '',                       // C: 尺寸
+                    '',                       // C: 配电箱形式
                     '',                       // D: 半周长
                     '',                       // E: 工程量
                     item.materialCode,       // F: 项目编码（未计价材编码）
@@ -1046,8 +1105,8 @@
             ws['!cols'] = [
                 { wch: 10 },   // A: 序号
                 { wch: 25 },   // B: 项目名称
-                { wch: 18 },   // C: 尺寸
-                { wch: 12 },   // D: 半周长
+                { wch: 12 },   // C: 配电箱形式
+                { wch: 16 },   // D: 半周长
                 { wch: 8 },    // E: 工程量
                 { wch: 14 },   // F: 项目编码
                 { wch: 12 },   // G: 行类型
